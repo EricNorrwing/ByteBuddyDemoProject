@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
@@ -82,7 +83,7 @@ public class UserDynamicControllerGenerator {
 
         //Creates builder with unique classname and @Restcontroller annotation
 
-        Object userController = new ByteBuddy()
+        Class<?> dynamicControllerClass = new ByteBuddy()
                 .subclass(Object.class)
                 .name("UserDynamicController")
                 .annotateType(AnnotationDescription.Builder
@@ -142,9 +143,10 @@ public class UserDynamicControllerGenerator {
 
                 .make()
                 .load(getClass().getClassLoader())
-                .getLoaded()
-                .newInstance();
+                .getLoaded();
 
+        Constructor<?> constructor = dynamicControllerClass.getConstructor();
+        Object userController = constructor.newInstance();
 
 
         log.info("Generated `DynamicController`: {}", userController.getClass().getName());
